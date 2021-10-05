@@ -3,4 +3,4 @@ bin/kubectl-push-peer:
 
 .PHONY: image/kubectl-push-peer
 image/kubectl-push-peer: bin/kubectl-push-peer
-	DOCKER_BUILDKIT=0 docker build -t ghcr.io/strrl/kubectl-push-peer:latest -f ./image/kubectl-push-peer/Dockerfile .
+	DOCKER_BUILDKIT=0 docker build -t ghcr.io/strrl/kubectl-push-peer:latest ./image/kubectl-push-peer

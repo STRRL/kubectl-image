@@ -23,7 +23,7 @@ func main() {
 		rw.WriteHeader(http.StatusOK)
 	})
 
-	err := http.ListenAndServe(":28375", http.DefaultServeMux)
+	err := http.ListenAndServe("0.0.0.0:28375", http.DefaultServeMux)
 	if err != nil {
 		logger.Error(err, "failed to start http server")
 	}
