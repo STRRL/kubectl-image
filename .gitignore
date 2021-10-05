@@ -17,3 +17,6 @@
 
 # vscode go debugger
 */__debug*
+
+# binary
+bin/
