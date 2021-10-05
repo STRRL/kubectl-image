@@ -8,3 +8,4 @@ I was always bothering with one problem: when I develop or debug chaos mesh, I n
 
 ## How it works
 
+https://github.com/STRRL/kubectl-push/wiki/How-it-works%3F
