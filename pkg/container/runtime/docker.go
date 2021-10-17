@@ -1,4 +1,4 @@
-package importer
+package runtime
 
 import (
 	"io"
@@ -8,10 +8,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-type DockerImageLoader struct {
+var _ Remote = (*Docker)(nil)
+
+type Docker struct {
 }
 
-func (it *DockerImageLoader) LoadImage(content io.ReadCloser) error {
+func (it *Docker) LoadImage(content io.ReadCloser) error {
 	command := exec.Command("docker", "image", "load")
 	pipe, err := command.StdinPipe()
 	command.Stdout = os.Stdout

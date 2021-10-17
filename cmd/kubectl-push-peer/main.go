@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/http"
 
-	importer "github.com/STRRL/kubectl-push/pkg/loader"
+	containerruntime "github.com/STRRL/kubectl-push/pkg/container/runtime"
 	"github.com/go-logr/zapr"
 	"go.uber.org/zap"
 )
@@ -30,6 +30,6 @@ func main() {
 }
 
 func forwardToDockerImageImport(content io.ReadCloser) error {
-	cr := importer.DockerImageLoader{}
+	var cr containerruntime.Remote
 	return cr.LoadImage(content)
 }

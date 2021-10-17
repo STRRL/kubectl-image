@@ -20,3 +20,6 @@
 
 # binary
 bin/
+
+# jetbrains
+.idea/
