@@ -30,6 +30,6 @@ func main() {
 }
 
 func forwardToDockerImageImport(content io.ReadCloser) error {
-	var cr containerruntime.Remote
+	cr := &containerruntime.Docker{}
 	return cr.LoadImage(content)
 }
