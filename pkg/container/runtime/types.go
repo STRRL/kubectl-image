@@ -6,7 +6,7 @@ import "io"
 // Interface Local check the required image exists, and fetch the content of the image.
 type Local interface {
 	ImageExist(imageName string) (bool, error)
-	ImageSave(imageName string) (io.ReadCloser, error)
+	ImageSave(imageName string, content io.Writer) error
 }
 
 // Interface Remote means that the container runtime is running at the "server side"/"kubelet side".

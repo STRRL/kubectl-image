@@ -9,6 +9,7 @@ import (
 	"github.com/STRRL/kubectl-push/pkg/provisioner"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -28,7 +29,7 @@ func NewCmdPushOptions() *CmdPushOptions {
 
 // Run executes the command
 func (o *CmdPushOptions) RunE() error {
-	var cr containerruntime.Local
+	cr := containerruntime.Docker{}
 	var err error
 	var exist bool
 	if exist, err = cr.ImageExist(o.image); err != nil {
@@ -39,11 +40,15 @@ func (o *CmdPushOptions) RunE() error {
 		return errors.Errorf("Image %s does not exist on local machine", o.image)
 	}
 
-	var reader io.ReadCloser
-	if reader, err = cr.ImageSave(o.image); err != nil {
-		return err
-	}
-	defer reader.Close()
+	preader, pwriter := io.Pipe()
+
+	go func() {
+		// TODO: handle these errors
+		if err := cr.ImageSave(o.image, pwriter); err != nil {
+			logger.Error(err, "failed to save image", "image", o.image)
+		}
+		pwriter.Close()
+	}()
 
 	// prepare kubectl-push-peer
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
@@ -62,18 +67,22 @@ func (o *CmdPushOptions) RunE() error {
 		return err
 	}
 
-	peerProvisioner := provisioner.NewAdHoc(rawConfig.Contexts[rawConfig.CurrentContext].Namespace, clientset)
+	peerProvisioner := provisioner.NewAdHoc(rawConfig.Contexts[rawConfig.CurrentContext].Namespace, clientset, restConfig)
 	ctx := context.TODO()
 
-	peerInstance, err := peerProvisioner.SpawnPeerOnTargetNode(ctx, "nodeName")
-	if err != nil {
-		return err
-	}
-	defer peerInstance.Destory()
+	nodes, err := clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 
-	baseUrl := peerInstance.BaseUrl()
-	if err := peer.LoadImage(ctx, baseUrl, reader); err != nil {
-		return nil
+	for _, node := range nodes.Items {
+		peerInstance, err := peerProvisioner.SpawnPeerOnTargetNode(ctx, node.Name)
+		if err != nil {
+			return err
+		}
+		defer peerInstance.Destory()
+
+		baseUrl := peerInstance.BaseUrl()
+		if err := peer.LoadImage(ctx, baseUrl, preader); err != nil {
+			return err
+		}
 	}
 	return nil
 }

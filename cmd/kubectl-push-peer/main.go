@@ -12,6 +12,10 @@ import (
 var logger = zapr.NewLogger(zap.L()).WithName("main")
 
 func main() {
+	http.DefaultServeMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
 	http.DefaultServeMux.HandleFunc("/image/load", func(rw http.ResponseWriter, r *http.Request) {
 		err := forwardToDockerImageImport(r.Body)
 		if err != nil {
