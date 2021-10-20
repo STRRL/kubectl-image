@@ -40,16 +40,6 @@ func (o *CmdPushOptions) RunE() error {
 		return errors.Errorf("Image %s does not exist on local machine", o.image)
 	}
 
-	preader, pwriter := io.Pipe()
-
-	go func() {
-		// TODO: handle these errors
-		if err := cr.ImageSave(o.image, pwriter); err != nil {
-			logger.Error(err, "failed to save image", "image", o.image)
-		}
-		pwriter.Close()
-	}()
-
 	// prepare kubectl-push-peer
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, nil)
@@ -71,8 +61,22 @@ func (o *CmdPushOptions) RunE() error {
 	ctx := context.TODO()
 
 	nodes, err := clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
 
 	for _, node := range nodes.Items {
+		preader, pwriter := io.Pipe()
+		go func() {
+			// TODO: handle these errors
+			logger.Info("image transmitting", "image", o.image, "node", node.Name)
+			if err := cr.ImageSave(o.image, pwriter); err != nil {
+				logger.Error(err, "failed to save image", "image", o.image)
+			}
+			pwriter.Close()
+			logger.Info("image saved", "image", o.image, "node", node.Name)
+		}()
+
 		peerInstance, err := peerProvisioner.SpawnPeerOnTargetNode(ctx, node.Name)
 		if err != nil {
 			return err

@@ -79,8 +79,9 @@ func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, 
 			NodeName: node,
 			Containers: []v1.Container{
 				{
-					Name:  "kubectl-push-peer",
-					Image: imageKubectlPushPeer,
+					Name:            "kubectl-push-peer",
+					Image:           imageKubectlPushPeer,
+					ImagePullPolicy: v1.PullAlways,
 					ReadinessProbe: &v1.Probe{
 						Handler: v1.Handler{
 							HTTPGet: &v1.HTTPGetAction{

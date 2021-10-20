@@ -1,11 +1,13 @@
 # syntax=docker/dockerfile:experimental
 
-FROM golang:1.16-alpine AS build-env
+FROM bitnami/golang:1.17.2 AS build-env
+WORKDIR /
+RUN git clone --depth=1 https://github.com/STRRL/kubectl-push
 ENV GO111MODULE on
-RUN go install github.com/STRRL/kubectl-push/cmd/kubectl-push-peer@latest
+RUN cd /kubectl-push && make
 
-FROM alpine:latest
+FROM debian:stable-slim
 LABEL org.opencontainers.image.source https://github.com/STRRL/kubectl-push
-RUN apk add --no-cache docker-cli
-COPY --from=build-env /go/bin/kubectl-push-peer /usr/local/bin/kubectl-push-peer
+COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
+COPY --from=build-env /kubectl-push/bin/kubectl-push-peer /usr/local/bin/kubectl-push-peer
 CMD kubectl-push-peer
