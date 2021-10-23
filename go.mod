@@ -11,7 +11,6 @@ require (
 	k8s.io/apimachinery v0.22.2
 	k8s.io/cli-runtime v0.22.2
 	k8s.io/client-go v0.22.2
-	k8s.io/component-base v0.22.2
 )
 
 replace k8s.io/klog/v2 => k8s.io/klog/v2 v2.20.0
