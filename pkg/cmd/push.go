@@ -80,7 +80,7 @@ func (o *CmdPushOptions) RunE() error {
 		if err != nil {
 			return err
 		}
-		defer peerInstance.Destory()
+		defer peerInstance.Destroy()
 
 		getLogger().Info("image transmitting", "image", o.image, "node", node.Name)
 		baseUrl := peerInstance.BaseUrl()

@@ -160,7 +160,7 @@ type adHocPeer struct {
 }
 
 // Destroy would terminate the port forwarding, and delete the ad-hoc kubectl-push-peer pod.
-func (it *adHocPeer) Destory() error {
+func (it *adHocPeer) Destroy() error {
 	it.portForwardCancelFunc()
 	return it.clientset.CoreV1().Pods(it.pod.Namespace).Delete(context.TODO(), it.pod.Name, metav1.DeleteOptions{})
 }
