@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -31,7 +32,14 @@ func (it *Docker) LoadImage(content io.ReadCloser) error {
 }
 
 func (it *Docker) ImageExist(imageName string) (bool, error) {
-	// TODO: implement
+	command := exec.Command("docker", "image", "inspect", imageName)
+	if err := command.Start(); err != nil {
+		return false, err
+	}
+
+	if err := command.Wait(); err != nil {
+		return false, errors.Wrap(err, fmt.Sprintf("no such image %s", imageName))
+	}
 	return true, nil
 }
 

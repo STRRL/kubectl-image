@@ -69,12 +69,11 @@ func (o *CmdPushOptions) RunE() error {
 		preader, pwriter := io.Pipe()
 		go func() {
 			// TODO: handle these errors
-			logger.Info("image transmitting", "image", o.image, "node", node.Name)
 			if err := cr.ImageSave(o.image, pwriter); err != nil {
-				logger.Error(err, "failed to save image", "image", o.image)
+				getLogger().Error(err, "failed to save image", "image", o.image)
 			}
 			pwriter.Close()
-			logger.Info("image saved", "image", o.image, "node", node.Name)
+			getLogger().Info("image saved", "image", o.image, "node", node.Name)
 		}()
 
 		peerInstance, err := peerProvisioner.SpawnPeerOnTargetNode(ctx, node.Name)
@@ -83,6 +82,7 @@ func (o *CmdPushOptions) RunE() error {
 		}
 		defer peerInstance.Destory()
 
+		getLogger().Info("image transmitting", "image", o.image, "node", node.Name)
 		baseUrl := peerInstance.BaseUrl()
 		if err := peer.LoadImage(ctx, baseUrl, preader); err != nil {
 			return err
@@ -92,7 +92,7 @@ func (o *CmdPushOptions) RunE() error {
 }
 
 func NewCmdPush() *cobra.Command {
-	o := NewCmdPushOptions()
+	options := NewCmdPushOptions()
 
 	cmd := &cobra.Command{
 		Use:          "push",
@@ -100,14 +100,13 @@ func NewCmdPush() *cobra.Command {
 		Example:      "push alpine:latest",
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			options := NewCmdPushOptions()
 			return options.RunE()
 		},
 	}
 
-	cmd.Flags().StringVarP(&o.image, "image", "i", "", "Image to push")
+	cmd.Flags().StringVarP(&options.image, "image", "i", "", "Image to push")
 
-	o.configFlags.AddFlags(cmd.Flags())
+	options.configFlags.AddFlags(cmd.Flags())
 
 	return cmd
 }

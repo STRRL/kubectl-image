@@ -50,7 +50,7 @@ func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, 
 			return nil, err
 		}
 	} else {
-		logger.WithName("ad-hoc provisioner").Info("Pod already existed, recreate it", "pod", podName)
+		getLogger().WithName("ad-hoc").Info("Pod already existed, delete it", "pod", podName)
 		if err := it.clientset.CoreV1().Pods(it.namespace).Delete(ctx, podName, metav1.DeleteOptions{}); err != nil {
 			return nil, err
 		}
@@ -69,6 +69,8 @@ func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, 
 			return nil, waitDeleteErr
 		}
 	}
+
+	getLogger().WithName("ad-hoc").Info("create Pod with kubectl-push-peer", "pod", podName)
 
 	_, err := it.clientset.CoreV1().Pods(it.namespace).Create(ctx, &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -101,6 +103,7 @@ func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, 
 
 	var pod *v1.Pod
 
+	getLogger().WithName("ad-hoc").Info("waiting for pod start up", "pod", podName)
 	// wait for pod to be running
 	err = wait.Poll(waitPodRunningInterval, waitPodRunningTimeout, func() (done bool, err error) {
 		pod, err = it.clientset.CoreV1().Pods(it.namespace).Get(ctx, podName, metav1.GetOptions{})
@@ -115,6 +118,7 @@ func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, 
 	}
 
 	// port forward, restore the context
+	getLogger().WithName("ad-hoc").Info("setup port-forwarding", "pod", podName)
 	portForwardCtx, cancelFunc := context.WithCancel(ctx)
 	localPort, err := it.portForward(portForwardCtx, pod, it.restconfig, defaultKubectlPushPort)
 	if err != nil {
