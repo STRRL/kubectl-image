@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/STRRL/kubectl-push/pkg/peer"
 	"io"
 	"net/http"
 
@@ -16,7 +17,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	http.DefaultServeMux.HandleFunc("/image/load", func(rw http.ResponseWriter, r *http.Request) {
+	http.DefaultServeMux.HandleFunc(peer.UrlImageLoad, func(rw http.ResponseWriter, r *http.Request) {
 		err := forwardToDockerImageImport(r.Body)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
