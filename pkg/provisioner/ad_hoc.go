@@ -85,7 +85,7 @@ func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, 
 					Image:           imageKubectlPushPeer,
 					ImagePullPolicy: v1.PullAlways,
 					ReadinessProbe: &v1.Probe{
-						Handler: v1.Handler{
+						ProbeHandler: v1.ProbeHandler{
 							HTTPGet: &v1.HTTPGetAction{
 								Path: "/healthz",
 								Port: intstr.FromInt(defaultKubectlPushPort),
