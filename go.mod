@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/go-logr/logr v1.2.2
-	github.com/go-logr/zapr v1.1.0
+	github.com/go-logr/zapr v1.2.2
 	github.com/google/uuid v1.2.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/pkg/errors v0.9.1
