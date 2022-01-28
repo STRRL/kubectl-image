@@ -198,6 +198,7 @@ func (it *AdHoc) portForward(ctx context.Context, pod *v1.Pod, restconfig *rest.
 	}
 
 	errChan := make(chan error)
+
 	go func() {
 		errChan <- forwarder.ForwardPorts()
 	}()

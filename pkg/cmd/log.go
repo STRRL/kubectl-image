@@ -6,6 +6,6 @@ import (
 	"go.uber.org/zap"
 )
 
-var getLogger = func() logr.Logger {
+func getLogger() logr.Logger {
 	return zapr.NewLogger(zap.L()).WithName("provisioner")
 }

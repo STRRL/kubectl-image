@@ -10,22 +10,22 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger = zapr.NewLogger(zap.L()).WithName("main")
-
 func main() {
+	logger := zapr.NewLogger(zap.L()).WithName("main")
+
 	http.DefaultServeMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	http.DefaultServeMux.HandleFunc(peer.UrlImageLoad, func(rw http.ResponseWriter, r *http.Request) {
+	http.DefaultServeMux.HandleFunc(peer.UrlImageLoad, func(responseWriter http.ResponseWriter, r *http.Request) {
 		err := forwardToDockerImageImport(r.Body)
 		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte(err.Error()))
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			_, _ = responseWriter.Write([]byte(err.Error()))
 			return
 		}
 
-		rw.WriteHeader(http.StatusOK)
+		responseWriter.WriteHeader(http.StatusOK)
 	})
 
 	err := http.ListenAndServe("0.0.0.0:28375", http.DefaultServeMux)

@@ -6,14 +6,11 @@ import (
 	"go.uber.org/zap"
 )
 
-func init() {
+func main() {
 	logger, _ := zap.NewProduction()
 	zap.ReplaceGlobals(logger)
-}
-
-func main() {
 	defer func() {
-		zap.L().Sync()
+		_ = zap.L().Sync()
 	}()
 	flags := pflag.NewFlagSet("kubectl-push", pflag.ExitOnError)
 	pflag.CommandLine = flags

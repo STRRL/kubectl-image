@@ -29,10 +29,11 @@ func NewCmdPushOptions() *CmdPushOptions {
 
 // Run executes the command.
 func (o *CmdPushOptions) RunE() error {
-	cr := containerruntime.Docker{}
+	containerRuntime := containerruntime.Docker{}
 	var err error
 	var exist bool
-	if exist, err = cr.ImageExist(o.image); err != nil {
+
+	if exist, err = containerRuntime.ImageExist(o.image); err != nil {
 		return err
 	}
 
@@ -67,9 +68,10 @@ func (o *CmdPushOptions) RunE() error {
 
 	for _, node := range nodes.Items {
 		preader, pwriter := io.Pipe()
+
 		go func() {
 			// TODO: handle these errors
-			if err := cr.ImageSave(o.image, pwriter); err != nil {
+			if err := containerRuntime.ImageSave(o.image, pwriter); err != nil {
 				getLogger().Error(err, "failed to save image", "image", o.image)
 			}
 			pwriter.Close()
