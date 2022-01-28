@@ -6,6 +6,6 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger = func() logr.Logger {
+func logger() logr.Logger {
 	return zapr.NewLogger(zap.L()).WithName("peer")
 }

@@ -1,6 +1,13 @@
 linters:
   disable:
     - exhaustivestruct
+    - golint
+    - maligned
+    - interfacer
+    - scopelint
+    - godox
+    - ireturn
+    - prealloc
   presets:
     - bugs
     - comment

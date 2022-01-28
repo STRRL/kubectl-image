@@ -4,29 +4,30 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/STRRL/kubectl-push/pkg/peer"
-
 	containerruntime "github.com/STRRL/kubectl-push/pkg/container/runtime"
+	"github.com/STRRL/kubectl-push/pkg/peer"
 	"github.com/go-logr/zapr"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
-var logger = zapr.NewLogger(zap.L()).WithName("main")
-
 func main() {
+	logger := zapr.NewLogger(zap.L()).WithName("main")
+
 	http.DefaultServeMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	http.DefaultServeMux.HandleFunc(peer.UrlImageLoad, func(rw http.ResponseWriter, r *http.Request) {
+	http.DefaultServeMux.HandleFunc(peer.URLImageLoad, func(responseWriter http.ResponseWriter, r *http.Request) {
 		err := forwardToDockerImageImport(r.Body)
 		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte(err.Error()))
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			_, _ = responseWriter.Write([]byte(err.Error()))
+
 			return
 		}
 
-		rw.WriteHeader(http.StatusOK)
+		responseWriter.WriteHeader(http.StatusOK)
 	})
 
 	err := http.ListenAndServe("0.0.0.0:28375", http.DefaultServeMux)
@@ -36,6 +37,8 @@ func main() {
 }
 
 func forwardToDockerImageImport(content io.ReadCloser) error {
-	cr := &containerruntime.Docker{}
-	return cr.LoadImage(content)
+	containerRuntime := &containerruntime.Docker{}
+	err := containerRuntime.LoadImage(content)
+
+	return errors.Wrapf(err, "forward content to container runtime image load")
 }
