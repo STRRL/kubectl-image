@@ -10,6 +10,7 @@ import (
 	"github.com/STRRL/kubectl-push/pkg/provisioner"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
@@ -21,14 +22,14 @@ type PushCommandOptions struct {
 	image       string
 }
 
-// constructor for PushCommandOptions.
+// NewCmdPushOptions is the constructor for PushCommandOptions.
 func NewCmdPushOptions() *PushCommandOptions {
 	return &PushCommandOptions{
 		configFlags: genericclioptions.NewConfigFlags(true),
 	}
 }
 
-// Run executes the command.
+// RunE executes the command.
 func (o *PushCommandOptions) RunE() error {
 	containerRuntime := containerruntime.Docker{}
 
@@ -45,9 +46,10 @@ func (o *PushCommandOptions) RunE() error {
 		return errors.Errorf("Image %s does not exist on local machine", o.image)
 	}
 
-	// prepare kubectl-push-peer
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, nil)
+	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		nil,
+	)
 
 	restConfig, err := clientConfig.ClientConfig()
 	if err != nil {
@@ -72,6 +74,39 @@ func (o *PushCommandOptions) RunE() error {
 		return errors.Wrap(err, "list nodes")
 	}
 
+	peers, err := o.preparePeersOnEachNode(ctx, nodes, containerRuntime, err, peerProvisioner)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		for _, item := range peers {
+			peerInstance := item.peer
+			nodeName := item.node
+
+			if err := peerInstance.Destroy(); err != nil {
+				getLogger().Error(err, "destroy peer instance", "node", nodeName)
+			}
+		}
+	}()
+
+	return nil
+}
+
+type peerAndNodeName struct {
+	peer provisioner.Peer
+	node string
+}
+
+func (o *PushCommandOptions) preparePeersOnEachNode(
+	ctx context.Context,
+	nodes *v1.NodeList,
+	containerRuntime containerruntime.Docker,
+	err error,
+	peerProvisioner *provisioner.AdHoc,
+) ([]peerAndNodeName, error) {
+	var peers []peerAndNodeName
+
 	for _, node := range nodes.Items {
 		preader, pwriter := io.Pipe()
 
@@ -91,24 +126,23 @@ func (o *PushCommandOptions) RunE() error {
 
 		peerInstance, err := peerProvisioner.SpawnPeerOnTargetNode(ctx, node.Name)
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("spawn peer on node %s", node.Name))
+			return nil, errors.Wrap(err, fmt.Sprintf("spawn peer on node %s", node.Name))
 		}
 
-		defer func() {
-			if err := peerInstance.Destroy(); err != nil {
-				getLogger().Error(err, "destroy peer instance", "node", node.Name)
-			}
-		}()
+		peers = append(peers, peerAndNodeName{
+			peer: peerInstance,
+			node: node.Name,
+		})
 
 		getLogger().Info("image transmitting", "image", o.image, "node", node.Name)
 
 		baseURL := peerInstance.BaseURL()
 		if err := peer.LoadImage(ctx, baseURL, preader); err != nil {
-			return errors.Wrap(err, fmt.Sprintf("load image for node %s", node.Name))
+			return nil, errors.Wrap(err, fmt.Sprintf("load image for node %s", node.Name))
 		}
 	}
 
-	return nil
+	return peers, nil
 }
 
 func NewCmdPush() *cobra.Command {

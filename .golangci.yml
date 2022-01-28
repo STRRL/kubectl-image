@@ -6,6 +6,8 @@ linters:
     - interfacer
     - scopelint
     - godox
+    - ireturn
+    - prealloc
   presets:
     - bugs
     - comment
