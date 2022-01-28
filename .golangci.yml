@@ -1,6 +1,10 @@
 linters:
   disable:
     - exhaustivestruct
+    - golint
+    - maligned
+    - interfacer
+    - scopelint
   presets:
     - bugs
     - comment
