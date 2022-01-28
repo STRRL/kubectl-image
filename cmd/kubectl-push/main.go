@@ -13,6 +13,7 @@ func main() {
 	defer func() {
 		_ = zap.L().Sync()
 	}()
+
 	flags := pflag.NewFlagSet("kubectl-push", pflag.ExitOnError)
 	pflag.CommandLine = flags
 

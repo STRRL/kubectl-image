@@ -4,6 +4,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/pkg/errors"
+
 	containerruntime "github.com/STRRL/kubectl-push/pkg/container/runtime"
 	"github.com/STRRL/kubectl-push/pkg/peer"
 	"github.com/go-logr/zapr"
@@ -22,6 +24,7 @@ func main() {
 		if err != nil {
 			responseWriter.WriteHeader(http.StatusInternalServerError)
 			_, _ = responseWriter.Write([]byte(err.Error()))
+
 			return
 		}
 
@@ -35,6 +38,7 @@ func main() {
 }
 
 func forwardToDockerImageImport(content io.ReadCloser) error {
-	cr := &containerruntime.Docker{}
-	return cr.LoadImage(content)
+	containerRuntime := &containerruntime.Docker{}
+	err := containerRuntime.LoadImage(content)
+	return errors.Wrapf(err, "forward content to container runtime image load")
 }

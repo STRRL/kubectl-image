@@ -31,8 +31,11 @@ func NewCmdPushOptions() *PushCommandOptions {
 // Run executes the command.
 func (o *PushCommandOptions) RunE() error {
 	containerRuntime := containerruntime.Docker{}
-	var err error
-	var exist bool
+
+	var (
+		err   error
+		exist bool
+	)
 
 	if exist, err = containerRuntime.ImageExist(o.image); err != nil {
 		return errors.Wrap(err, "check image exists")
@@ -77,10 +80,12 @@ func (o *PushCommandOptions) RunE() error {
 			if err := containerRuntime.ImageSave(o.image, pwriter); err != nil {
 				getLogger().Error(err, "failed to save image", "image", o.image)
 			}
+
 			err = pwriter.Close()
 			if err != nil {
 				getLogger().Error(err, "close pipe writer")
 			}
+
 			getLogger().Info("image saved", "image", o.image, "node", node.Name)
 		}()
 
@@ -88,6 +93,7 @@ func (o *PushCommandOptions) RunE() error {
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("spawn peer on node %s", node.Name))
 		}
+
 		defer func() {
 			if err := peerInstance.Destroy(); err != nil {
 				getLogger().Error(err, "destroy peer instance", "node", node.Name)
@@ -95,6 +101,7 @@ func (o *PushCommandOptions) RunE() error {
 		}()
 
 		getLogger().Info("image transmitting", "image", o.image, "node", node.Name)
+
 		baseURL := peerInstance.BaseURL()
 		if err := peer.LoadImage(ctx, baseURL, preader); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("load image for node %s", node.Name))

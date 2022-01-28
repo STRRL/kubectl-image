@@ -11,17 +11,24 @@ import (
 
 func LoadImage(ctx context.Context, baseURL string, imageContent io.Reader) error {
 	targetURL := fmt.Sprintf("%s%s", baseURL, URLImageLoad)
-	rx, tx := io.Pipe()
+	pipeReader, pipeWriter := io.Pipe()
 
 	go func() {
-		written, _ := io.Copy(tx, imageContent)
-		logger().WithName("client").Info("image content tx finished", "url", targetURL, "size", written)
+		written, _ := io.Copy(pipeWriter, imageContent)
+		logger().WithName("client").Info("image content pipeWriter finished", "url", targetURL, "size", written)
 	}()
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, targetURL, rx)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, targetURL, pipeReader)
 	if err != nil {
 		return errors.Wrap(err, "new request for load images")
 	}
-	_, err = http.DefaultClient.Do(request)
+
+	response, err := http.DefaultClient.Do(request)
+	defer func() {
+		if err := response.Body.Close(); err != nil {
+			logger().WithName("client").Error(err, "close response body")
+		}
+	}()
+
 	return errors.Wrap(err, "send request for load images")
 }
