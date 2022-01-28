@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/STRRL/kubectl-push/pkg/peer"
 	"io"
 	"net/http"
+
+	"github.com/STRRL/kubectl-push/pkg/peer"
 
 	containerruntime "github.com/STRRL/kubectl-push/pkg/container/runtime"
 	"github.com/go-logr/zapr"

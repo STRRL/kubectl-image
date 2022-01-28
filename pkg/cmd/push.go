@@ -20,14 +20,14 @@ type CmdPushOptions struct {
 	image       string
 }
 
-// constructor for CmdPushOptions
+// constructor for CmdPushOptions.
 func NewCmdPushOptions() *CmdPushOptions {
 	return &CmdPushOptions{
 		configFlags: genericclioptions.NewConfigFlags(true),
 	}
 }
 
-// Run executes the command
+// Run executes the command.
 func (o *CmdPushOptions) RunE() error {
 	cr := containerruntime.Docker{}
 	var err error

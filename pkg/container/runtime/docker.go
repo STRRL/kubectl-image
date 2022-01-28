@@ -11,8 +11,7 @@ import (
 
 var _ Remote = (*Docker)(nil)
 
-type Docker struct {
-}
+type Docker struct{}
 
 func (it *Docker) LoadImage(content io.ReadCloser) error {
 	command := exec.Command("docker", "image", "load")

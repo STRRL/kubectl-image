@@ -1,0 +1,16 @@
+linters:
+  disable:
+    - exhaustivestruct
+  presets:
+    - bugs
+    - comment
+    - complexity
+    - error
+    - format
+    - import
+    - metalinter
+    - module
+    - performance
+    - style
+    - test
+    - unused

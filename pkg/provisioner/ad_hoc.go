@@ -18,10 +18,12 @@ import (
 	"k8s.io/client-go/transport/spdy"
 )
 
-const waitPodRunningInterval = 2 * time.Second
-const waitPodRunningTimeout = 5 * time.Minute
-const imageKubectlPushPeer = "ghcr.io/strrl/kubectl-push-peer:latest"
-const defaultKubectlPushPort = 28375
+const (
+	waitPodRunningInterval = 2 * time.Second
+	waitPodRunningTimeout  = 5 * time.Minute
+	imageKubectlPushPeer   = "ghcr.io/strrl/kubectl-push-peer:latest"
+	defaultKubectlPushPort = 28375
+)
 
 // TODO: provisioner interface
 
@@ -96,7 +98,6 @@ func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, 
 			},
 		},
 	}, metav1.CreateOptions{})
-
 	if err != nil {
 		return nil, err
 	}
