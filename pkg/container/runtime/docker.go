@@ -18,27 +18,32 @@ func (it *Docker) LoadImage(content io.ReadCloser) error {
 	command.Stdin = content
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
+
 	if err := command.Start(); err != nil {
-		return err
+		return errors.Wrap(err, "execute docker image load")
 	}
+
 	if err := command.Wait(); err != nil {
-		return err
+		return errors.Wrap(err, "wait docker image load")
 	}
+
 	if command.ProcessState.ExitCode() != 0 {
 		return errors.Errorf("exit code is not 0, exitcode: %d", command.ProcessState.ExitCode())
 	}
+
 	return nil
 }
 
 func (it *Docker) ImageExist(imageName string) (bool, error) {
 	command := exec.Command("docker", "image", "inspect", imageName)
 	if err := command.Start(); err != nil {
-		return false, err
+		return false, errors.Wrap(err, "execute docker image inspect")
 	}
 
 	if err := command.Wait(); err != nil {
 		return false, errors.Wrap(err, fmt.Sprintf("no such image %s", imageName))
 	}
+
 	return true, nil
 }
 
@@ -47,13 +52,16 @@ func (it *Docker) ImageSave(imageName string, content io.Writer) error {
 	command.Stdout = content
 
 	if err := command.Start(); err != nil {
-		return err
+		return errors.Wrap(err, "execute docker image save command")
 	}
+
 	if err := command.Wait(); err != nil {
-		return err
+		return errors.Wrap(err, "wait docker image save")
 	}
+
 	if command.ProcessState.ExitCode() != 0 {
 		return errors.Errorf("exit code is not 0, exitcode: %d", command.ProcessState.ExitCode())
 	}
+
 	return nil
 }

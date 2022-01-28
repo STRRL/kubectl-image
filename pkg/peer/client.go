@@ -5,21 +5,23 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
-func LoadImage(ctx context.Context, baseUrl string, imageContent io.Reader) error {
-	targetUrl := fmt.Sprintf("%s%s", baseUrl, UrlImageLoad)
+func LoadImage(ctx context.Context, baseURL string, imageContent io.Reader) error {
+	targetURL := fmt.Sprintf("%s%s", baseURL, URLImageLoad)
 	rx, tx := io.Pipe()
 
 	go func() {
 		written, _ := io.Copy(tx, imageContent)
-		logger().WithName("client").Info("image content tx finished", "url", targetUrl, "size", written)
+		logger().WithName("client").Info("image content tx finished", "url", targetURL, "size", written)
 	}()
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, targetUrl, rx)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, targetURL, rx)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "new request for load images")
 	}
 	_, err = http.DefaultClient.Do(request)
-	return err
+	return errors.Wrap(err, "send request for load images")
 }

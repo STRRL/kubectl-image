@@ -16,5 +16,3 @@ require (
 	k8s.io/cli-runtime v0.23.3
 	k8s.io/client-go v0.23.3
 )
-
-replace k8s.io/klog/v2 => k8s.io/klog/v2 v2.20.0

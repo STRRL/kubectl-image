@@ -17,7 +17,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	http.DefaultServeMux.HandleFunc(peer.UrlImageLoad, func(responseWriter http.ResponseWriter, r *http.Request) {
+	http.DefaultServeMux.HandleFunc(peer.URLImageLoad, func(responseWriter http.ResponseWriter, r *http.Request) {
 		err := forwardToDockerImageImport(r.Body)
 		if err != nil {
 			responseWriter.WriteHeader(http.StatusInternalServerError)

@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,7 +55,11 @@ func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, 
 		}
 	} else {
 		getLogger().WithName("ad-hoc").Info("Pod already existed, delete it", "pod", podName)
-		if err := it.clientset.CoreV1().Pods(it.namespace).Delete(ctx, podName, metav1.DeleteOptions{}); err != nil {
+		err := it.clientset.
+			CoreV1().
+			Pods(it.namespace).
+			Delete(ctx, podName, metav1.DeleteOptions{})
+		if err != nil {
 			return nil, err
 		}
 		// wait for the pod to be deleted
@@ -166,17 +172,24 @@ func (it *adHocPeer) Destroy() error {
 	return it.clientset.CoreV1().Pods(it.pod.Namespace).Delete(context.TODO(), it.pod.Name, metav1.DeleteOptions{})
 }
 
-func (it *adHocPeer) BaseUrl() string {
+func (it *adHocPeer) BaseURL() string {
 	return fmt.Sprintf("http://localhost:%d", it.localPort)
 }
 
 func (it *AdHoc) portForward(ctx context.Context, pod *v1.Pod, restconfig *rest.Config, remotePort uint16) (uint16, error) {
 	// kubernetes port forward
-	req := it.clientset.CoreV1().RESTClient().Post().Resource("pods").Namespace(pod.Namespace).Name(pod.Name).SubResource("portforward")
+	req := it.clientset.
+		CoreV1().
+		RESTClient().
+		Post().
+		Resource("pods").
+		Namespace(pod.Namespace).
+		Name(pod.Name).
+		SubResource("portforward")
 
 	transport, upgrader, err := spdy.RoundTripperFor(restconfig)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrapf(err, "build troundtrip transport and upgrader")
 	}
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, http.MethodPost, req.URL())
 
@@ -188,13 +201,15 @@ func (it *AdHoc) portForward(ctx context.Context, pod *v1.Pod, restconfig *rest.
 	}()
 	go func() {
 		// TODO: forward the logs from port forwarder
-		io.Copy(io.Discard, preader)
+		if _, err := io.Copy(os.Stderr, preader); err != nil {
+			getLogger().Error(err, "forward logs from port forwarder")
+		}
 	}()
 
 	readyChan := make(chan struct{})
 	forwarder, err := portforward.New(dialer, []string{fmt.Sprintf("0:%d", remotePort)}, ctx.Done(), readyChan, pwriter, pwriter)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrapf(err, "build port forwarder")
 	}
 
 	errChan := make(chan error)

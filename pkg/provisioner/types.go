@@ -7,6 +7,6 @@ type Peer interface {
 	// It MUST be called when the peer is no longer needed.
 	Destroy() error
 
-	// TODO: change the name. BaseUrl sounds not so good. :(
-	BaseUrl() string
+	// TODO: change the name. BaseURL sounds not so good. :(
+	BaseURL() string
 }

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	containerruntime "github.com/STRRL/kubectl-push/pkg/container/runtime"
@@ -15,26 +16,26 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-type CmdPushOptions struct {
+type PushCommandOptions struct {
 	configFlags *genericclioptions.ConfigFlags
 	image       string
 }
 
-// constructor for CmdPushOptions.
-func NewCmdPushOptions() *CmdPushOptions {
-	return &CmdPushOptions{
+// constructor for PushCommandOptions.
+func NewCmdPushOptions() *PushCommandOptions {
+	return &PushCommandOptions{
 		configFlags: genericclioptions.NewConfigFlags(true),
 	}
 }
 
 // Run executes the command.
-func (o *CmdPushOptions) RunE() error {
+func (o *PushCommandOptions) RunE() error {
 	containerRuntime := containerruntime.Docker{}
 	var err error
 	var exist bool
 
 	if exist, err = containerRuntime.ImageExist(o.image); err != nil {
-		return err
+		return errors.Wrap(err, "check image exists")
 	}
 
 	if !exist {
@@ -44,18 +45,20 @@ func (o *CmdPushOptions) RunE() error {
 	// prepare kubectl-push-peer
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, nil)
+
 	restConfig, err := clientConfig.ClientConfig()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "load rest config")
 	}
 
 	clientset, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "setup kubeClient config")
 	}
+
 	rawConfig, err := clientConfig.RawConfig()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "fetch rawConfig from clientConfig")
 	}
 
 	peerProvisioner := provisioner.NewAdHoc(rawConfig.Contexts[rawConfig.CurrentContext].Namespace, clientset, restConfig)
@@ -63,7 +66,7 @@ func (o *CmdPushOptions) RunE() error {
 
 	nodes, err := clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "list nodes")
 	}
 
 	for _, node := range nodes.Items {
@@ -74,22 +77,30 @@ func (o *CmdPushOptions) RunE() error {
 			if err := containerRuntime.ImageSave(o.image, pwriter); err != nil {
 				getLogger().Error(err, "failed to save image", "image", o.image)
 			}
-			pwriter.Close()
+			err = pwriter.Close()
+			if err != nil {
+				getLogger().Error(err, "close pipe writer")
+			}
 			getLogger().Info("image saved", "image", o.image, "node", node.Name)
 		}()
 
 		peerInstance, err := peerProvisioner.SpawnPeerOnTargetNode(ctx, node.Name)
 		if err != nil {
-			return err
+			return errors.Wrap(err, fmt.Sprintf("spawn peer on node %s", node.Name))
 		}
-		defer peerInstance.Destroy()
+		defer func() {
+			if err := peerInstance.Destroy(); err != nil {
+				getLogger().Error(err, "destroy peer instance", "node", node.Name)
+			}
+		}()
 
 		getLogger().Info("image transmitting", "image", o.image, "node", node.Name)
-		baseUrl := peerInstance.BaseUrl()
-		if err := peer.LoadImage(ctx, baseUrl, preader); err != nil {
-			return err
+		baseURL := peerInstance.BaseURL()
+		if err := peer.LoadImage(ctx, baseURL, preader); err != nil {
+			return errors.Wrap(err, fmt.Sprintf("load image for node %s", node.Name))
 		}
 	}
+
 	return nil
 }
 

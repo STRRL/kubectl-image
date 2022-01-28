@@ -5,6 +5,7 @@ linters:
     - maligned
     - interfacer
     - scopelint
+    - godox
   presets:
     - bugs
     - comment
