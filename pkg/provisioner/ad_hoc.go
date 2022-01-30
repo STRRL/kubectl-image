@@ -65,15 +65,14 @@ func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, 
 		return nil, errors.Wrap(err, "establish port forward")
 	}
 
-	var pod v1.Pod
-
-	if _, err := it.clientset.CoreV1().Pods(it.namespace).Get(ctx, podName, metav1.GetOptions{}); err != nil {
+	pod, err := it.clientset.CoreV1().Pods(it.namespace).Get(ctx, podName, metav1.GetOptions{})
+	if err != nil {
 		return nil, errors.Wrapf(err, "fetch pod %s", podName)
 	}
 
 	return &adHocPeer{
 		nodeName:              node,
-		pod:                   &pod,
+		pod:                   pod,
 		portForwardCancelFunc: cancelFunc,
 		clientset:             it.clientset,
 		localPort:             localPort,
@@ -84,9 +83,10 @@ func (it *AdHoc) deletePeerIfAlreadyExists(ctx context.Context, podName string) 
 	// if the pod already exists, delete it
 	_, err := it.clientset.CoreV1().Pods(it.namespace).Get(ctx, podName, metav1.GetOptions{})
 	if err != nil {
-		if !apierrors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return nil
 		}
+		return errors.Wrapf(err, "fetch existed kubectl-push-peer pod")
 	}
 
 	getLogger().WithName("ad-hoc").Info("Pod already existed, delete it", "pod", podName)
@@ -174,9 +174,8 @@ func (it *AdHoc) waitNewPeerIsReady(ctx context.Context, podName string) error {
 }
 
 func (it *AdHoc) establishPortForward(ctx context.Context, podName string) (uint16, context.CancelFunc, error) {
-	var pod v1.Pod
-
-	if _, err := it.clientset.CoreV1().Pods(it.namespace).Get(ctx, podName, metav1.GetOptions{}); err != nil {
+	pod, err := it.clientset.CoreV1().Pods(it.namespace).Get(ctx, podName, metav1.GetOptions{})
+	if err != nil {
 		return 0, nil, errors.Wrapf(err, "port forard for pod %s", podName)
 	}
 
@@ -184,7 +183,7 @@ func (it *AdHoc) establishPortForward(ctx context.Context, podName string) (uint
 
 	portForwardCtx, cancelFunc := context.WithCancel(ctx)
 
-	localPort, err := it.portForward(portForwardCtx, &pod, it.restconfig, defaultKubectlPushPort)
+	localPort, err := it.portForward(portForwardCtx, pod, it.restconfig, defaultKubectlPushPort)
 	if err != nil {
 		cancelFunc()
 
@@ -224,7 +223,7 @@ func (it *adHocPeer) Destroy() error {
 	it.portForwardCancelFunc()
 	err := it.clientset.CoreV1().Pods(it.pod.Namespace).Delete(context.TODO(), it.pod.Name, metav1.DeleteOptions{})
 
-	return errors.Wrapf(err, "delete pod %s", it.pod.Name)
+	return errors.Wrapf(err, "delete pod %s/%s", it.pod.Namespace, it.pod.Name)
 }
 
 func (it *adHocPeer) BaseURL() string {
@@ -290,6 +289,6 @@ func (it *AdHoc) portForward(
 		// return the first forwarded port
 		return forwardedPorts[0].Local, nil
 	case err := <-errChan:
-		return 0, err
+		return 0, errors.Wrapf(err, "error from forwarder.ForwardPorts")
 	}
 }
