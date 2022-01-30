@@ -74,7 +74,7 @@ func (o *PushCommandOptions) RunE() error {
 		return errors.Wrap(err, "list nodes")
 	}
 
-	peers, err := o.preparePeersOnEachNode(ctx, nodes, containerRuntime, err, peerProvisioner)
+	peers, err := o.preparePeersAndUploadImageOnEachNode(ctx, nodes, containerRuntime, err, peerProvisioner)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ type peerAndNodeName struct {
 	node string
 }
 
-func (o *PushCommandOptions) preparePeersOnEachNode(
+func (o *PushCommandOptions) preparePeersAndUploadImageOnEachNode(
 	ctx context.Context,
 	nodes *v1.NodeList,
 	containerRuntime containerruntime.Docker,
