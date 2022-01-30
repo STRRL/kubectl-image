@@ -16,10 +16,10 @@ Deliver container images to kubernetes cluster simply, please do not use it in p
 
 - [x] build `kubectl-push-peer` that forwards HTTP request content to `docker image load`
 - [x] play `kubectl-push-peer` with curl
-- [ ] build `kubectl-push`, automatically create Pod on Node, then send certain requests, in one command
+- [x] build `kubectl-push`, automatically create Pod on Node, then send certain requests, in one command
 - [ ] terminal UI progress, silent mode
 - [x] support kubernetes container runtime: docker
-- [ ] support local container runtime: docker
+- [x] support local container runtime: docker
 - [ ] contributes to krew
 - [ ] reduce duplicated layers
 - [ ] support kubernetes container runtime: containerd
