@@ -3,10 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/STRRL/kubectl-push/pkg/peer"
 	"io"
 
 	containerruntime "github.com/STRRL/kubectl-push/pkg/container/runtime"
-	"github.com/STRRL/kubectl-push/pkg/peer"
 	"github.com/STRRL/kubectl-push/pkg/provisioner"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -74,9 +74,36 @@ func (o *PushCommandOptions) RunE() error {
 		return errors.Wrap(err, "list nodes")
 	}
 
-	peers, err := o.preparePeersAndUploadImageOnEachNode(ctx, nodes, containerRuntime, err, peerProvisioner)
+	peers, err := o.preparePeersOnEachNode(ctx, nodes, peerProvisioner)
 	if err != nil {
 		return err
+	}
+
+	for _, item := range peers {
+		preader, pwriter := io.Pipe()
+		go func() {
+			// TODO: handle these errors
+			if err := containerRuntime.ImageSave(o.image, pwriter); err != nil {
+				getLogger().Error(err, "failed to save image", "image", o.image)
+			}
+
+			err = pwriter.Close()
+			if err != nil {
+				getLogger().Error(err, "close pipe writer")
+			}
+
+			getLogger().Info("image saved", "image", o.image, "node", item.node)
+		}()
+
+		err := peer.LoadImage(ctx, item.peer.BaseURL(), preader)
+		if err != nil {
+			getLogger().Error(err, "load image to node", "image", o.image, "node", item.node)
+		}
+
+		err = item.peer.Destroy()
+		if err != nil {
+			getLogger().Error(err, "destroy peer", "node", item.node)
+		}
 	}
 
 	defer func() {
@@ -98,48 +125,22 @@ type peerAndNodeName struct {
 	node string
 }
 
-func (o *PushCommandOptions) preparePeersAndUploadImageOnEachNode(
+func (o *PushCommandOptions) preparePeersOnEachNode(
 	ctx context.Context,
 	nodes *v1.NodeList,
-	containerRuntime containerruntime.Docker,
-	err error,
 	peerProvisioner *provisioner.AdHoc,
 ) ([]peerAndNodeName, error) {
 	var peers []peerAndNodeName
 
 	for _, node := range nodes.Items {
-		preader, pwriter := io.Pipe()
-
-		go func() {
-			// TODO: handle these errors
-			if err := containerRuntime.ImageSave(o.image, pwriter); err != nil {
-				getLogger().Error(err, "failed to save image", "image", o.image)
-			}
-
-			err = pwriter.Close()
-			if err != nil {
-				getLogger().Error(err, "close pipe writer")
-			}
-
-			getLogger().Info("image saved", "image", o.image, "node", node.Name)
-		}()
-
 		peerInstance, err := peerProvisioner.SpawnPeerOnTargetNode(ctx, node.Name)
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("spawn peer on node %s", node.Name))
 		}
-
 		peers = append(peers, peerAndNodeName{
 			peer: peerInstance,
 			node: node.Name,
 		})
-
-		getLogger().Info("image transmitting", "image", o.image, "node", node.Name)
-
-		baseURL := peerInstance.BaseURL()
-		if err := peer.LoadImage(ctx, baseURL, preader); err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("load image for node %s", node.Name))
-		}
 	}
 
 	return peers, nil
