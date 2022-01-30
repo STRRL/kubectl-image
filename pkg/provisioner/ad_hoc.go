@@ -86,6 +86,7 @@ func (it *AdHoc) deletePeerIfAlreadyExists(ctx context.Context, podName string) 
 		if apierrors.IsNotFound(err) {
 			return nil
 		}
+
 		return errors.Wrapf(err, "fetch existed kubectl-push-peer pod")
 	}
 
