@@ -3,10 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/STRRL/kubectl-push/pkg/peer"
 	"io"
 
 	containerruntime "github.com/STRRL/kubectl-push/pkg/container/runtime"
+	"github.com/STRRL/kubectl-push/pkg/peer"
 	"github.com/STRRL/kubectl-push/pkg/provisioner"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -79,15 +79,26 @@ func (o *PushCommandOptions) RunE() error {
 		return err
 	}
 
+	o.bestEffortLoadImageForEachPeer(ctx, peers, &containerRuntime)
+
+	return nil
+}
+
+func (o *PushCommandOptions) bestEffortLoadImageForEachPeer(
+	ctx context.Context,
+	peers []peerAndNodeName,
+	containerRuntime containerruntime.Local,
+) {
 	for _, item := range peers {
 		preader, pwriter := io.Pipe()
+
 		go func() {
 			// TODO: handle these errors
 			if err := containerRuntime.ImageSave(o.image, pwriter); err != nil {
 				getLogger().Error(err, "failed to save image", "image", o.image)
 			}
 
-			err = pwriter.Close()
+			err := pwriter.Close()
 			if err != nil {
 				getLogger().Error(err, "close pipe writer")
 			}
@@ -105,19 +116,6 @@ func (o *PushCommandOptions) RunE() error {
 			getLogger().Error(err, "destroy peer", "node", item.node)
 		}
 	}
-
-	defer func() {
-		for _, item := range peers {
-			peerInstance := item.peer
-			nodeName := item.node
-
-			if err := peerInstance.Destroy(); err != nil {
-				getLogger().Error(err, "destroy peer instance", "node", nodeName)
-			}
-		}
-	}()
-
-	return nil
 }
 
 type peerAndNodeName struct {
@@ -137,6 +135,7 @@ func (o *PushCommandOptions) preparePeersOnEachNode(
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("spawn peer on node %s", node.Name))
 		}
+
 		peers = append(peers, peerAndNodeName{
 			peer: peerInstance,
 			node: node.Name,

@@ -1,5 +1,9 @@
 # kubectl-push
 
+[![Latest Docker Image](https://github.com/STRRL/kubectl-push/actions/workflows/latest-docker-image.yml/badge.svg)](https://github.com/STRRL/kubectl-push/actions/workflows/latest-docker-image.yml)
+[![golangci-lint](https://github.com/STRRL/kubectl-push/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/STRRL/kubectl-push/actions/workflows/golangci-lint.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/STRRL/kubectl-push)](https://goreportcard.com/report/github.com/STRRL/kubectl-push)
+
 docker push but for kubernetes
 
 (WIP)
