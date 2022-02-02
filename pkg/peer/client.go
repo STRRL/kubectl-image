@@ -9,6 +9,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// LoadImage would use HTTP to transmit the image to the kubectl-push-peer.
+// TODO: refactor with a client instance.
 func LoadImage(ctx context.Context, baseURL string, imageContent io.Reader) error {
 	targetURL := fmt.Sprintf("%s%s", baseURL, URLImageLoad)
 	pipeReader, pipeWriter := io.Pipe()

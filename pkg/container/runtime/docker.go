@@ -11,6 +11,7 @@ import (
 
 var _ Remote = (*Docker)(nil)
 
+// Docker introduce image operations with docker.
 type Docker struct{}
 
 func (it *Docker) LoadImage(content io.ReadCloser) error {

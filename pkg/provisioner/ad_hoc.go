@@ -29,7 +29,7 @@ const (
 
 // TODO: provisioner interface
 
-// Struct AdHoc will set up a temporary Pod (with image: kubectl-push-peer) on the specified node.
+// AdHoc will set up a temporary Pod (with image: kubectl-push-peer) on the specified node.
 type AdHoc struct {
 	namespace  string
 	clientset  *kubernetes.Clientset
@@ -45,6 +45,8 @@ func NewAdHoc(namespace string, clientset *kubernetes.Clientset, restconfig *res
 	}
 }
 
+// SpawnPeerOnTargetNode would initialize peer on all the kubernetes nodes.
+// TODO: the interface of provisioner.
 func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, error) {
 	podName := fmt.Sprintf("kubectl-push-peer-on-%s", node)
 
@@ -232,10 +234,7 @@ func (it *adHocPeer) BaseURL() string {
 }
 
 func (it *AdHoc) portForward(
-	ctx context.Context,
-	pod *v1.Pod,
-	restconfig *rest.Config,
-	remotePort uint16,
+	ctx context.Context, pod *v1.Pod, restconfig *rest.Config, remotePort uint16,
 ) (uint16, error) {
 	// kubernetes port forward
 	req := it.clientset.CoreV1().RESTClient().Post().
@@ -253,7 +252,8 @@ func (it *AdHoc) portForward(
 
 	go func() {
 		<-ctx.Done()
-		pwriter.Close()
+
+		_ = pwriter.Close()
 	}()
 	go func() {
 		// TODO: forward the logs from port forwarder

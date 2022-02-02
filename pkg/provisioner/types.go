@@ -1,6 +1,6 @@
 package provisioner
 
-// Interacted Peer means one "kubectl-push-peer" instance that runs on specific node.
+// Peer means one "kubectl-push-peer" instance that runs on specific node.
 // It should be cleaned up after it is no longer needed.
 type Peer interface {
 	// Destroy the peer, release the resources.

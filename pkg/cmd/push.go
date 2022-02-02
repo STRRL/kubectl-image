@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// PushCommandOptions is the configuration for the push command.
 type PushCommandOptions struct {
 	configFlags *genericclioptions.ConfigFlags
 	image       string
@@ -145,6 +146,7 @@ func (o *PushCommandOptions) preparePeersOnEachNode(
 	return peers, nil
 }
 
+// NewCmdPush creates a new cobra.Command for command push.
 func NewCmdPush() *cobra.Command {
 	options := NewCmdPushOptions()
 
