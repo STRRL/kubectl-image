@@ -9,13 +9,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-var _ Remote = (*Docker)(nil)
+var _ Remote = (*DockerCli)(nil)
+var _ Local = (*DockerCli)(nil)
 
-// Docker introduce image operations with docker.
-type Docker struct{}
+// DockerCli introduce image operations with docker.
+type DockerCli struct{}
 
 // LoadImage implements Remote.LoadImage.
-func (it *Docker) LoadImage(content io.ReadCloser) error {
+func (it *DockerCli) LoadImage(content io.ReadCloser) error {
 	command := exec.Command("docker", "image", "load")
 	command.Stdin = content
 	command.Stdout = os.Stdout
@@ -37,7 +38,7 @@ func (it *Docker) LoadImage(content io.ReadCloser) error {
 }
 
 // ImageExist implements Local.ImageExist.
-func (it *Docker) ImageExist(imageName string) (bool, error) {
+func (it *DockerCli) ImageExist(imageName string) (bool, error) {
 	command := exec.Command("docker", "image", "inspect", imageName)
 	if err := command.Start(); err != nil {
 		return false, errors.Wrap(err, "execute docker image inspect")
@@ -51,7 +52,7 @@ func (it *Docker) ImageExist(imageName string) (bool, error) {
 }
 
 // ImageSave implements Local.ImageSave.
-func (it *Docker) ImageSave(imageName string, content io.Writer) error {
+func (it *DockerCli) ImageSave(imageName string, content io.Writer) error {
 	command := exec.Command("docker", "image", "save", imageName)
 	command.Stdout = content
 

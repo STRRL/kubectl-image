@@ -37,7 +37,7 @@ func main() {
 }
 
 func forwardToDockerImageImport(content io.ReadCloser) error {
-	containerRuntime := &containerruntime.Docker{}
+	containerRuntime := &containerruntime.DockerCli{}
 	err := containerRuntime.LoadImage(content)
 
 	return errors.Wrapf(err, "forward content to container runtime image load")

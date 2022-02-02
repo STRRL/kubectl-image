@@ -32,7 +32,7 @@ func NewCmdPushOptions() *PushCommandOptions {
 
 // RunE executes the command.
 func (o *PushCommandOptions) RunE() error {
-	containerRuntime := containerruntime.Docker{}
+	containerRuntime := containerruntime.DockerCli{}
 
 	var (
 		err   error
