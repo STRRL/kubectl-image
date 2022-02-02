@@ -17,5 +17,10 @@ image: image/kubectl-push-peer
 image/kubectl-push-peer: bin/kubectl-push-peer
 	DOCKER_BUILDKIT=0 docker build -t ghcr.io/strrl/kubectl-push-peer:latest ./image/kubectl-push-peer
 
+.PHONY: clean
 clean:
 	rm -rf ./bin
+
+.PHONY: check
+check:
+	golangci-lint run
