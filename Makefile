@@ -23,4 +23,4 @@ clean:
 
 .PHONY: check
 check:
-	golangci-lint run
+	golangci-lint run --fix
