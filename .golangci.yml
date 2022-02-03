@@ -16,6 +16,8 @@ linters:
     - ireturn
     # premature optimization is the root of all evil, DO NOT DO IT!
     - prealloc
+    # I have no idea why goimports would wrongly remove my imports, and gci is much better.
+    - goimports
   presets:
     # the following presets would actually enable most of (maybe all? I am not sure) the linters.
     - bugs
