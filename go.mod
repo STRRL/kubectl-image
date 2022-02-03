@@ -3,6 +3,9 @@ module github.com/STRRL/kubectl-push
 go 1.16
 
 require (
+	github.com/containerd/containerd v1.5.9 // indirect
+	github.com/docker/docker v20.10.12+incompatible // indirect
+	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/go-logr/logr v1.2.2
 	github.com/go-logr/zapr v1.2.2
 	github.com/google/uuid v1.2.0 // indirect

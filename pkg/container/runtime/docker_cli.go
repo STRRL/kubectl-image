@@ -9,10 +9,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-var _ Remote = (*DockerCli)(nil)
-var _ Local = (*DockerCli)(nil)
+var (
+	_ Remote = (*DockerCli)(nil)
+	_ Local  = (*DockerCli)(nil)
+)
 
 // DockerCli introduce image operations with docker.
+// Deprecated: use Docker instead.
 type DockerCli struct{}
 
 // LoadImage implements Remote.LoadImage.
