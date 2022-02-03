@@ -5,10 +5,6 @@ import (
 	"io"
 	"time"
 
-	"github.com/pkg/errors"
-
-	"github.com/pkg/errors"
-
 	"github.com/docker/docker/client"
 	"github.com/pkg/errors"
 )
