@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/STRRL/kubectl-image/pkg/agent"
-	containerruntime "github.com/STRRL/kubectl-image/pkg/container/runtime"
+	containerruntime "github.com/STRRL/kubectl-image/pkg/agent/container/runtime"
 	"github.com/go-logr/zapr"
 	"go.uber.org/zap"
 )
