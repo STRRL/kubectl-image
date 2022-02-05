@@ -2,12 +2,12 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: kubectl-push-peer
-  name: kubectl-push-peer
+    app: kubectl-image-agent
+  name: kubectl-image-agent
 spec:
   containers:
-  - image: ghcr.io/strrl/kubectl-push-peer:latest
-    name: kubectl-push-peer
+  - image: ghcr.io/strrl/kubectl-image-agent:latest
+    name: kubectl-image-agent
     imagePullPolicy: Always
     volumeMounts:
       - mountPath: /var/run/docker.sock

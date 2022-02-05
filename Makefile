@@ -2,20 +2,20 @@
 all: clean binary
 
 .PHONY: binary
-binary: bin/kubectl-image bin/kubectl-push-peer
+binary: bin/kubectl-image bin/kubectl-image-agent
 
 bin/kubectl-image:
 	go build -o ./bin/kubectl-image ./cmd/kubectl-image/main.go
 
-bin/kubectl-push-peer:
-	go build -o ./bin/kubectl-push-peer ./cmd/kubectl-push-peer/main.go
+bin/kubectl-image-agent:
+	go build -o ./bin/kubectl-image-agent ./cmd/kubectl-image-agent/main.go
 
 .PHONY: image
-image: image/kubectl-push-peer
+image: image/kubectl-image-agent
 
-.PHONY: image/kubectl-push-peer
-image/kubectl-push-peer: bin/kubectl-push-peer
-	DOCKER_BUILDKIT=0 docker build -t ghcr.io/strrl/kubectl-push-peer:latest ./image/kubectl-push-peer
+.PHONY: image/kubectl-image-agent
+image/kubectl-image-agent: bin/kubectl-image-agent
+	DOCKER_BUILDKIT=0 docker build -t ghcr.io/strrl/kubectl-image-agent:latest -f image/kubectl-image-agent/Dockerfile .
 
 .PHONY: clean
 clean:

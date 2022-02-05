@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
+	"github.com/STRRL/kubectl-image/pkg/agent"
 	containerruntime "github.com/STRRL/kubectl-image/pkg/container/runtime"
-	"github.com/STRRL/kubectl-image/pkg/peer"
 	"github.com/go-logr/zapr"
 	"go.uber.org/zap"
 )
@@ -12,7 +12,7 @@ import (
 func main() {
 	logger := zapr.NewLogger(zap.L()).WithName("main")
 
-	application := peer.NewApplication("0.0.0.0:28375", &containerruntime.DockerCli{}, logger)
+	application := agent.NewApplication("0.0.0.0:28375", &containerruntime.DockerCli{}, logger)
 
 	if err := application.Start(context.TODO()); err != nil {
 		logger.Error(err, "failed to start http server")

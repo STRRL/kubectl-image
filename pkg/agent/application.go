@@ -1,4 +1,4 @@
-package peer
+package agent
 
 import (
 	"context"
@@ -12,10 +12,10 @@ import (
 )
 
 // URLImageLoad is the default HTTP endpoint for loading the container image.
-// TODO: move HTTP server from cmd/kubectl-push-peer to here.
+// TODO: move HTTP server from cmd/kubectl-image-agent to here.
 const URLImageLoad = "/image/load"
 
-// Application is the core component for command kubectl-push-peer.
+// Application is the core component for command kubectl-image-agent.
 type Application struct {
 	listenAddress string
 	remote        containerruntime.Remote

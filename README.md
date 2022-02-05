@@ -28,8 +28,8 @@ And another thing is I was always bothering with one problem: when I develop or 
 
 > Out-of-date: This roadmap need updates.
 
-- [x] build `kubectl-push-peer` that forwards HTTP request content to `docker image load`
-- [x] play `kubectl-push-peer` with curl
+- [x] build `kubectl-image-agent` that forwards HTTP request content to `docker image load`
+- [x] play `kubectl-image-agent` with curl
 - [x] build `kubectl-push`, automatically create Pod on Node, then send certain requests, in one command
 - [ ] terminal UI progress, silent mode
 - [x] support kubernetes container runtime: docker

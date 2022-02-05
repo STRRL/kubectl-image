@@ -19,4 +19,4 @@ jobs:
     - name: Build the Docker image
       run: make image
     - name: Push docker image to ghcr.io
-      run: docker push ghcr.io/strrl/kubectl-push-peer:latest
+      run: docker push ghcr.io/strrl/kubectl-image-agent:latest

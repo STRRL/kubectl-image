@@ -23,13 +23,13 @@ import (
 const (
 	waitPodRunningInterval = 2 * time.Second
 	waitPodRunningTimeout  = 5 * time.Minute
-	imageKubectlPushPeer   = "ghcr.io/strrl/kubectl-push-peer:latest"
+	imageKubectlPushPeer   = "ghcr.io/strrl/kubectl-image-agent:latest"
 	defaultKubectlPushPort = 28375
 )
 
 // TODO: provisioner interface
 
-// AdHoc will set up a temporary Pod (with image: kubectl-push-peer) on the specified node.
+// AdHoc will set up a temporary Pod (with image: kubectl-image-agent) on the specified node.
 type AdHoc struct {
 	namespace  string
 	clientset  *kubernetes.Clientset
@@ -45,21 +45,21 @@ func NewAdHoc(namespace string, clientset *kubernetes.Clientset, restconfig *res
 	}
 }
 
-// SpawnPeerOnTargetNode would initialize peer on all the kubernetes nodes.
+// SpawnPeerOnTargetNode would initialize agent on all the kubernetes nodes.
 // TODO: the interface of provisioner.
 func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, error) {
-	podName := fmt.Sprintf("kubectl-push-peer-on-%s", node)
+	podName := fmt.Sprintf("kubectl-image-agent-on-%s", node)
 
 	if err := it.deletePeerIfAlreadyExists(ctx, podName); err != nil {
-		return nil, errors.Wrap(err, "delete peer if already exists")
+		return nil, errors.Wrap(err, "delete agent if already exists")
 	}
 
 	if err := it.spawnNewPeerOnTargetNode(ctx, node, podName); err != nil {
-		return nil, errors.Wrapf(err, "spawn new peer on target node %s, podName %s", node, podName)
+		return nil, errors.Wrapf(err, "spawn new agent on target node %s, podName %s", node, podName)
 	}
 
 	if err := it.waitNewPeerIsReady(ctx, podName); err != nil {
-		return nil, errors.Wrapf(err, "wait new peer pod %s is ready", podName)
+		return nil, errors.Wrapf(err, "wait new agent pod %s is ready", podName)
 	}
 
 	localPort, cancelFunc, err := it.establishPortForward(ctx, podName)
@@ -89,7 +89,7 @@ func (it *AdHoc) deletePeerIfAlreadyExists(ctx context.Context, podName string) 
 			return nil
 		}
 
-		return errors.Wrapf(err, "fetch existed kubectl-push-peer pod")
+		return errors.Wrapf(err, "fetch existed kubectl-image-agent pod")
 	}
 
 	getLogger().WithName("ad-hoc").Info("Pod already existed, delete it", "pod", podName)
@@ -123,7 +123,7 @@ func (it *AdHoc) deletePeerIfAlreadyExists(ctx context.Context, podName string) 
 }
 
 func (it *AdHoc) spawnNewPeerOnTargetNode(ctx context.Context, node, podName string) error {
-	getLogger().WithName("ad-hoc").Info("create Pod with kubectl-push-peer", "pod", podName)
+	getLogger().WithName("ad-hoc").Info("create Pod with kubectl-image-agent", "pod", podName)
 
 	_, err := it.clientset.CoreV1().Pods(it.namespace).Create(ctx, &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -134,7 +134,7 @@ func (it *AdHoc) spawnNewPeerOnTargetNode(ctx context.Context, node, podName str
 			NodeName: node,
 			Containers: []v1.Container{
 				{
-					Name:            "kubectl-push-peer",
+					Name:            "kubectl-image-agent",
 					Image:           imageKubectlPushPeer,
 					ImagePullPolicy: v1.PullAlways,
 					ReadinessProbe: &v1.Probe{
@@ -150,7 +150,7 @@ func (it *AdHoc) spawnNewPeerOnTargetNode(ctx context.Context, node, podName str
 		},
 	}, metav1.CreateOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "create kube-push-peer pod on node %s", node)
+		return errors.Wrapf(err, "create kube-push-agent pod on node %s", node)
 	}
 
 	return nil
@@ -214,14 +214,14 @@ type adHocPeer struct {
 	nodeName string
 	// portForwardCancelFunc is used to cancel the port forwarding.
 	portForwardCancelFunc context.CancelFunc
-	// pod is the corresponding kubectl-push-peer pod.
+	// pod is the corresponding kubectl-image-agent pod.
 	pod       *v1.Pod
 	clientset *kubernetes.Clientset
 	// localPort is the listen port on the local machine after port forwarding
 	localPort uint16
 }
 
-// Destroy would terminate the port forwarding, and delete the ad-hoc kubectl-push-peer pod.
+// Destroy would terminate the port forwarding, and delete the ad-hoc kubectl-image-agent pod.
 func (it *adHocPeer) Destroy() error {
 	it.portForwardCancelFunc()
 	err := it.clientset.CoreV1().Pods(it.pod.Namespace).Delete(context.TODO(), it.pod.Name, metav1.DeleteOptions{})

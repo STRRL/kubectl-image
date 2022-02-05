@@ -1,4 +1,4 @@
-package peer
+package agent
 
 import (
 	"github.com/go-logr/logr"
@@ -7,5 +7,5 @@ import (
 )
 
 func logger() logr.Logger {
-	return zapr.NewLogger(zap.L()).WithName("peer")
+	return zapr.NewLogger(zap.L()).WithName("agent")
 }
