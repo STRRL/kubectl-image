@@ -1,22 +1,30 @@
-# kubectl-push
+# kubectl-image
 
-[![Latest Docker Image](https://github.com/STRRL/kubectl-push/actions/workflows/latest-docker-image.yml/badge.svg)](https://github.com/STRRL/kubectl-push/actions/workflows/latest-docker-image.yml)
-[![golangci-lint](https://github.com/STRRL/kubectl-push/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/STRRL/kubectl-push/actions/workflows/golangci-lint.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/STRRL/kubectl-push)](https://goreportcard.com/report/github.com/STRRL/kubectl-push)
+[![Latest Docker Image](https://github.com/STRRL/kubectl-image/actions/workflows/latest-docker-image.yml/badge.svg)](https://github.com/STRRL/kubectl-push/actions/workflows/latest-docker-image.yml)
+[![golangci-lint](https://github.com/STRRL/kubectl-image/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/STRRL/kubectl-push/actions/workflows/golangci-lint.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/STRRL/kubectl-image)](https://goreportcard.com/report/github.com/STRRL/kubectl-push)
 
-docker push but for kubernetes
+`docker image` but for kubernetes
 
 (WIP)
 
 ## Overview
 
-I was always bothering with one problem: when I develop or debug chaos mesh, I need deliver the latest modified image to the target kubernetes cluster. If the kubernetes runs on `minikube` or `kind` with single node, I could use `kind load docker-image`, `minikube image load`, or build with`eval minikube docker-env`
+Kubernetes (nearly) does not care about what images exist on the node, the only thing relates to "managing" image is image garbage collection.
+
+I think it's not so convenient to cluster admin using another certain tools to management the images.
+
+And another thing is I was always bothering with one problem: when I develop or debug chaos mesh, I need deliver the latest modified image to the target kubernetes cluster. If the kubernetes runs on `minikube` or `kind` with single node, I could use `kind load docker-image`, `minikube image load`, or build with`eval minikube docker-env`
 
 ## Feature
 
-Deliver container images to kubernetes cluster simply, please do not use it in production env.
+- List images on each Kubernetes Node
+- load image from local image
+- Deliver container images to kubernetes cluster simply, please do not use it in production env.
 
 ## Roadmap
+
+> Out-of-date: This roadmap need updates.
 
 - [x] build `kubectl-push-peer` that forwards HTTP request content to `docker image load`
 - [x] play `kubectl-push-peer` with curl
@@ -34,4 +42,4 @@ Deliver container images to kubernetes cluster simply, please do not use it in p
 
 ## How it works
 
-https://github.com/STRRL/kubectl-push/wiki/How-it-works%3F
+https://github.com/STRRL/kubectl-image/wiki/How-it-works%3F
