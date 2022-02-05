@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
-	containerruntime "github.com/STRRL/kubectl-push/pkg/container/runtime"
-	"github.com/STRRL/kubectl-push/pkg/peer"
+	containerruntime "github.com/STRRL/kubectl-image/pkg/container/runtime"
+	"github.com/STRRL/kubectl-image/pkg/peer"
 	"github.com/go-logr/zapr"
 	"go.uber.org/zap"
 )

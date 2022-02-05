@@ -8,6 +8,8 @@
 
 (WIP)
 
+This project is called `kuebctl-push` before, if you find legacy names left, welcome open issue or PR. 
+
 ## Overview
 
 Kubernetes (nearly) does not care about what images exist on the node, the only thing relates to "managing" image is image garbage collection.

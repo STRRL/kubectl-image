@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	containerruntime "github.com/STRRL/kubectl-push/pkg/container/runtime"
+	containerruntime "github.com/STRRL/kubectl-image/pkg/container/runtime"
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"go.uber.org/atomic"

@@ -1,26 +1,23 @@
 package main
 
 import (
-	"github.com/STRRL/kubectl-push/pkg/cmd"
-	"github.com/spf13/pflag"
+	stdlog "log"
+
+	"github.com/STRRL/kubectl-image/pkg/kubectlimage/cmd"
+	"github.com/go-logr/zapr"
 	"go.uber.org/zap"
 )
 
 func main() {
-	logger, _ := zap.NewProduction()
-	zap.ReplaceGlobals(logger)
-
-	defer func() {
-		_ = zap.L().Sync()
-	}()
-
-	flags := pflag.NewFlagSet("kubectl-image", pflag.ExitOnError)
-	pflag.CommandLine = flags
-
-	zap.L().Info("Starting kubectl-push")
-
-	err := cmd.NewCmdPush().Execute()
+	zapLogger, err := zap.NewDevelopment()
 	if err != nil {
-		zap.L().Error("failed to push image", zap.Error(err))
+		stdlog.Fatal(err)
+	}
+
+	logger := zapr.NewLogger(zapLogger)
+
+	err = cmd.NewRootCommand().Execute()
+	if err != nil {
+		logger.Error(err, "kubectl image")
 	}
 }
