@@ -35,6 +35,7 @@ func NewApplication(listenAddress string, remote containerruntime.Remote, logger
 
 	serveMux := http.NewServeMux()
 	serveMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("OK"))
 		w.WriteHeader(http.StatusOK)
 	})
 	http.DefaultServeMux.HandleFunc(URLImageLoad, func(responseWriter http.ResponseWriter, r *http.Request) {
@@ -67,7 +68,7 @@ func (it *Application) Start(ctx context.Context) error {
 	}()
 
 	go func() {
-		err := http.ListenAndServe(it.listenAddress, http.DefaultServeMux)
+		err := it.httpServer.ListenAndServe()
 		if err != nil {
 			// TODO: resolve this error
 			it.logger.Error(err, "start http server")
