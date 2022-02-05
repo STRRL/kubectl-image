@@ -15,6 +15,9 @@ import (
 // TODO: move HTTP server from cmd/kubectl-image-agent to here.
 const URLImageLoad = "/image/load"
 
+// URLHealth is the HTTP endpoint for health check.
+const URLHealth = "/healthz"
+
 // Application is the core component for command kubectl-image-agent.
 type Application struct {
 	listenAddress string
@@ -34,7 +37,7 @@ func NewApplication(listenAddress string, remote containerruntime.Remote, logger
 	}
 
 	serveMux := http.NewServeMux()
-	serveMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+	serveMux.HandleFunc(URLHealth, func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 		w.WriteHeader(http.StatusOK)
 	})

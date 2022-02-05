@@ -47,7 +47,7 @@ func NewAdHoc(namespace string, clientset *kubernetes.Clientset, restconfig *res
 
 // SpawnPeerOnTargetNode would initialize agent on all the kubernetes nodes.
 // TODO: the interface of provisioner.
-func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Peer, error) {
+func (it *AdHoc) SpawnPeerOnTargetNode(ctx context.Context, node string) (Agent, error) {
 	podName := fmt.Sprintf("kubectl-image-agent-on-%s", node)
 
 	if err := it.deletePeerIfAlreadyExists(ctx, podName); err != nil {

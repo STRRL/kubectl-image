@@ -16,7 +16,7 @@ func main() {
 
 	logger := zapr.NewLogger(zapLogger)
 
-	err = cmd.NewRootCommand().Execute()
+	err = cmd.NewRootCommand(logger.WithName("root")).Execute()
 	if err != nil {
 		logger.Error(err, "kubectl image")
 	}

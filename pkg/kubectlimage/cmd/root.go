@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"github.com/STRRL/kubectl-image/pkg/version"
+	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 )
 
 // NewRootCommand is the constructor for root command.
-func NewRootCommand() *cobra.Command {
+func NewRootCommand(logger logr.Logger) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "kubectl-image",
 		Example: "kubectl-image -h",
@@ -14,8 +15,9 @@ func NewRootCommand() *cobra.Command {
 		Version: version.GetVersion(),
 	}
 	result.AddCommand(
-		NewLoadCommand(),
+		NewLoadCommand(logger),
 		NewListCommand(),
+		NewAgentCommand(),
 	)
 
 	return result
