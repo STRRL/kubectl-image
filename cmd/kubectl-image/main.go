@@ -14,7 +14,7 @@ func main() {
 		_ = zap.L().Sync()
 	}()
 
-	flags := pflag.NewFlagSet("kubectl-push", pflag.ExitOnError)
+	flags := pflag.NewFlagSet("kubectl-image", pflag.ExitOnError)
 	pflag.CommandLine = flags
 
 	zap.L().Info("Starting kubectl-push")

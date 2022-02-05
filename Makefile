@@ -2,10 +2,10 @@
 all: clean binary
 
 .PHONY: binary
-binary: bin/kubectl-push bin/kubectl-push-peer
+binary: bin/kubectl-image bin/kubectl-push-peer
 
-bin/kubectl-push:
-	go build -o ./bin/kubectl-push ./cmd/kubectl-push/main.go
+bin/kubectl-image:
+	go build -o ./bin/kubectl-image ./cmd/kubectl-image/main.go
 
 bin/kubectl-push-peer:
 	go build -o ./bin/kubectl-push-peer ./cmd/kubectl-push-peer/main.go
