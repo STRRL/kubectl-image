@@ -1,6 +1,9 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/STRRL/kubectl-image/pkg/version"
+	"github.com/spf13/cobra"
+)
 
 // NewRootCommand is the constructor for root command.
 func NewRootCommand() *cobra.Command {
@@ -8,7 +11,7 @@ func NewRootCommand() *cobra.Command {
 		Use:     "kubectl-image",
 		Example: "kubectl-image -h",
 		Short:   "docker image but for kubernetes",
-		Version: "",
+		Version: version.GetVersion(),
 	}
 	result.AddCommand(
 		NewLoadCommand(),
