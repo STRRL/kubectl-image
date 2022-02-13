@@ -1,6 +1,10 @@
 package runtime
 
-import "io"
+import (
+	"context"
+	"github.com/STRRL/kubectl-image/pkg/agent"
+	"io"
+)
 
 // Local means that the container runtime is running at the "client side"/"kubectl side".
 // Local check the required image exists, and fetch the content of the image.
@@ -13,5 +17,7 @@ type Local interface {
 // Remote load the content of the image into the container runtime.
 type Remote interface {
 	// LoadImage loads image from bytes.
-	LoadImage(content io.ReadCloser) error
+	LoadImage(ctx context.Context, content io.ReadCloser) error
+
+	ListImages(ctx context.Context) ([]agent.ContainerImage, error)
 }

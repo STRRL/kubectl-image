@@ -2,6 +2,8 @@ package runtime
 
 import (
 	"context"
+	"github.com/STRRL/kubectl-image/pkg/agent"
+	"github.com/docker/docker/api/types"
 	"io"
 	"time"
 
@@ -21,13 +23,30 @@ type Docker struct {
 }
 
 // LoadImage implements the Remote.LoadImage.
-func (it *Docker) LoadImage(content io.ReadCloser) error {
-	ctx, cancelFunc := context.WithDeadline(context.TODO(), time.Now().Add(it.timeout))
-	defer cancelFunc()
-
+func (it *Docker) LoadImage(ctx context.Context, content io.ReadCloser) error {
 	_, err := it.imageAPIClient.ImageLoad(ctx, content, false)
 
 	return errors.Wrap(err, "load image")
+}
+
+func (it *Docker) ListImages(ctx context.Context) ([]agent.ContainerImage, error) {
+	list, err := it.imageAPIClient.ImageList(ctx, types.ImageListOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "list images")
+	}
+	var result []agent.ContainerImage
+	for _, item := range list {
+		result = append(result,
+			agent.ContainerImage{
+				Repository: item.RepoTags,
+				Tag:        "",
+				Digest:     "",
+				ImageID:    "",
+				Created:    time.Time{},
+				Size:       0,
+			})
+	}
+	return result
 }
 
 // ImageExist implements the Local.ImageExist.

@@ -14,8 +14,12 @@ import (
 type Client interface {
 	// Health execute the health check for target kubectl-image-agent.
 	Health(ctx context.Context) (bool, error)
+
 	// LoadImage loads the image into the nodes which running kubectl-image-agent.
 	LoadImage(ctx context.Context, imageContent io.Reader) error
+
+	// ListImage return all the existed container images
+	ListImage(ctx context.Context) ([]ContainerImage, error)
 }
 
 // HTTPClient is the default implementation of the Client interface.
