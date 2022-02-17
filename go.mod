@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/docker/docker v20.10.12+incompatible
 	github.com/go-logr/logr v1.2.2
-	github.com/go-logr/zapr v1.2.2
+	github.com/go-logr/zapr v1.2.3
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.3.0
 	go.uber.org/atomic v1.7.0
