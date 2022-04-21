@@ -10,8 +10,8 @@ require (
 	github.com/spf13/cobra v1.3.0
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.20.0
-	k8s.io/api v0.23.3
-	k8s.io/apimachinery v0.23.3
+	k8s.io/api v0.23.6
+	k8s.io/apimachinery v0.23.6
 	k8s.io/client-go v0.23.3
 )
 
